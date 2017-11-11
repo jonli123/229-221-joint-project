@@ -2,6 +2,10 @@ import csv
 import numpy as np
 
 
+
+
+
+
 #loads data in user by user, returns matrix of user data 56x51x71
 def loadData(filename):
 	data = np.loadtxt(open(filename,'rb'),delimiter=',', skiprows=1)	
@@ -15,13 +19,13 @@ def loadData(filename):
 	pairData = []
 	for i in data:
 		for j in data:
-			pairData = (i,j)
+
+			pairData.append((i,j))
 
 	#print len(users)
 	#print len(users[0])
 	#print (users[0][0])git
 	return np.array(users), np.array(pairData)
-
 
 
 def main():
