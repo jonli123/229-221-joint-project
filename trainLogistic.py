@@ -1,13 +1,18 @@
 import numpy as np
 import tensorflow as tf
+from sys import float_info
+from getUsers import retreiveData
 
 # Referenced from https://github.com/aymericdamien/TensorFlow-Examples/blob/master/examples/2_BasicModels/logistic_regression.py
 
-learning_rate = 0.01
+learning_rate = 0.001
 training_epochs = 25
-batch_size = 100
+batch_size = 128
 display_step = 1
 threshold = 0.5
+
+# an epsilon to prevent nan loss
+epsilon = float_info.epsilon
 
 def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"):
 
@@ -26,7 +31,7 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
 
     ## TODO we can play with what loss we use
     # Minimize error using cross entropy
-    cost = tf.reduce_mean(-y*tf.log(pred))
+    cost = tf.reduce_mean(-(y*tf.log(pred + epsilon) + (1-y)*tf.log(1-pred - epsilon)))
     # Gradient Descent
     optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
 
@@ -48,8 +53,8 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
             total_batch = int(m / batch_size)
             # Loop over all batches
             for i in range(total_batch):
-                batch_xs = train_x[i:i + batch_size]
-                batch_ys = train_y[i:i + batch_size]
+                batch_xs = train_x[i * batch_size:(i + 1) * batch_size]
+                batch_ys = train_y[i * batch_size:(i + 1) * batch_size]
 
                 # Run optimization op (backprop) and cost op (to get loss value)
                 _, c = sess.run([optimizer, cost], feed_dict={x: batch_xs,
@@ -66,8 +71,9 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
         print("Model saved in file: %s" % save_path)
 
         # Evaluate Model
-        correct_prediction = tf.equal(pred > threshold, y)
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        print("test prediction: ", (sess.run(pred, feed_dict={x: test_x})))
+
+        accuracy = tf.reduce_mean(tf.cast(tf.cast(pred > threshold, tf.float32) == y, tf.float32))
         print("Accuracy: ", (sess.run(accuracy, feed_dict={x: test_x, y:test_y})))
 
     return save_path
@@ -75,8 +81,9 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
 
 
 def main():
-	#load trainX, trainY
-
+    #load trainX, trainY
+    trainX, trainY, testX, testY = retreiveData("10user10exp")
+    train_and_eval(trainX, trainY, testX, testY)
 
 if __name__ == '__main__':
     main()
