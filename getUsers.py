@@ -1,6 +1,6 @@
 import csv
 import numpy as np
-
+import time
 
 
 
@@ -17,20 +17,29 @@ def loadData(filename):
 		users[userNum].append(data[i][1:n])
 
 	pairData = []
+	labels = []
+
 	for i in data:
 		for j in data:
-
-			pairData.append((i,j))
-
-	#print len(users)
-	#print len(users[0])
-	#print (users[0][0])git
-	return np.array(users), np.array(pairData)
+			pairData.append((i[1:n],j[1:n]))
+			if j[0] == i[0]:
+				labels.append(1)
+			else:
+				labels.append(0)
+	print len(labels)
+	print len(pairData)
+	return np.array(users), np.array(pairData), np.array(labels)
 
 
 def main():
+	start = time.time()
+
 	filename = 'keystroke.csv'
-	userMatrix,pairData = loadData(filename)
+	userMatrix,pairData,labels = loadData(filename)
+
+	end = time.time()
+	print "Time to run:" + str(end-start)
 
 if __name__ == '__main__':
     main()
+    
