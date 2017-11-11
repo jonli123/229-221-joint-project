@@ -9,7 +9,7 @@ batch_size = 100
 display_step = 1
 threshold = 0.5
 
-def train(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"):
+def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"):
 
     m, n = train_x.shape
 
@@ -62,7 +62,7 @@ def train(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"):
 
         print("Training Finished!")
         # Save the variables to disk.
-        save_path = saver.save(sess, "/tmp/" + model_name)
+        save_path = saver.save(sess, "./tmp/" + model_name)
         print("Model saved in file: %s" % save_path)
 
         # Evaluate Model
