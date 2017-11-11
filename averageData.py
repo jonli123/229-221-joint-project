@@ -8,6 +8,7 @@ m,n = data.shape
 out = []
 for i in range(n):
 	out.append(sum(data[:,i])/m)
-	print sum(data[:,i])/m
+	#print sum(data[:,i])/m
+
 
 print out
