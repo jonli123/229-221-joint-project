@@ -11,14 +11,22 @@ def loadData(filename):
 	for i in range(m):
 		userNum = int(data[i][0])-1
 		users[userNum].append(data[i][1:n])
+
+	pairData = []
+	for i in data:
+		for j in data:
+			pairData = (i,j)
+
 	#print len(users)
 	#print len(users[0])
-	#print (users[0][0])
-	return users
+	#print (users[0][0])git
+	return np.array(users), np.array(pairData)
+
+
 
 def main():
 	filename = 'keystroke.csv'
-	users = loadData(filename)
+	userMatrix,pairData = loadData(filename)
 
 if __name__ == '__main__':
     main()
