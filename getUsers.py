@@ -1,6 +1,8 @@
 import numpy as np
 import time
 import random
+from imblearn.over_sampling import SMOTE, ADASYN
+from imblearn.under_sampling import RandomUnderSampler
 
 
 user_cutoff = 2
@@ -40,15 +42,42 @@ def loadData(filename):
 
     trainX, trainY = zip(*labeledData[:cutoff])
     testX, testY= zip(*labeledData[cutoff:])
-
-
-
+    
     np.savetxt('trainX.csv',trainX,delimiter = ',')
     np.savetxt('trainY.csv',trainY,delimiter = ',')
     np.savetxt('testX.csv',testX,delimiter = ',')
     np.savetxt('testY.csv',testY,delimiter = ',')
-
-    return np.array(trainX), np.array(trainY), np.array(testX), np.array(testY)
+    
+    # oversample method choice
+    SMOTE_CONSTANT = 1
+    ADASYN_CONSTANT = 2
+    
+    # undersample method choice
+    RUS_CONSTANT = 1
+    
+    
+    oversample_choice = SMOTE_CONSTANT
+    undersample_choice = RUS_CONSTANT
+    
+    # oversampling methods, minority class    
+    if oversample_choice == SMOTE_CONSTANT:
+        sm = SMOTE(random_state=42)
+        trainX_resampled, trainY_resampled = sm.fit_sample(trainX, trainY)
+        return np.array(trainX_resampled), np.array(trainY_resampled), np.array(testX), np.array(testY)
+    
+    if oversample_choice == ADASYN_CONSTANT:
+        ada = ADASYN(random_state=42)
+        trainX_resampled, trainY_resampled = ada.fit_sample(trainX, trainY)
+        return np.array(trainX_resampled), np.array(trainY_resampled), np.array(testX), np.array(testY)
+    
+    # undersampling methods, majority class
+    if undersample_choice == RUS_CONSTANT:
+        rus = RandomUnderSampler(random_state=42)
+        trainX_resampled, trainY_resampled = rus.fit_sample(trainX, trainY)
+        return np.array(trainX_resampled), np.array(trainY_resampled), np.array(testX), np.array(testY)        
+    
+    #return np.array(trainX), np.array(trainY), np.array(testX), np.array(testY)
+    # return np.array(trainX_resampled), np.array(trainY_resampled), np.array(testX), np.array(testY)
 
 def retreiveData():
     trainX = np.genfromtxt('trainX.csv',delimiter=",",skip_header=False)
