@@ -6,7 +6,7 @@ from getUsers import retreiveData
 
 learning_rate = 0.001
 training_epochs = 25
-batch_size = 1024
+batch_size = 128
 display_step = 1
 threshold = 0.5
 
@@ -30,7 +30,7 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
 
     ## TODO we can play with what loss we use
     # Minimize error using cross entropy
-    cost = tf.reduce_sum(-(y*tf.log(pred + epsilon) + (1-y)*tf.log(1-pred - epsilon)))
+    cost = tf.reduce_sum(-(y*tf.log(pred + epsilon) + (1-y)*tf.log(1  - pred + epsilon)))
     # Gradient Descent
     optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
 
@@ -86,8 +86,9 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
                    false_neg, fn_update]
         sess.run(metrics, feed_dict={x: test_x, y: test_y})
 
+        predictions = sess.run(pred, feed_dict={x: test_x})
         false_neg_count = sess.run(false_neg)
-        specificity = (len(test_y) - false_neg_count)/(sum(label == 0 for label in test_y))
+        specificity = (sum(label == 0 for label in predictions) - false_neg_count)/sum(label == 0 for label in test_y)
 
         print("Accuracy: ", sess.run(accuracy))
         print("Precision: ", sess.run(precision)) # True positive / (true positive + false positive)
@@ -95,7 +96,7 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
         print("Specificity: ", specificity) # True negative/ Negative
         print("False Positive Count: ", sess.run(false_pos))
         print("False Negative Count: ", false_neg_count)
-
+        print("Number of Validation Examples: ", len(test_y))
 
     return save_path
 
@@ -104,7 +105,7 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
 def main():
     #load trainX, trainY
     trainX, trainY, testX, testY = retreiveData("full_RUS_undersample")
-    train_and_eval(trainX, trainY, testX, testY, "full_RUS")
+    train_and_eval(trainX, trainY, testX, testY)
 
 if __name__ == '__main__':
     main()
