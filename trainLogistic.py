@@ -2,12 +2,11 @@ import numpy as np
 import tensorflow as tf
 from sys import float_info
 from getUsers import retreiveData
-
 # Referenced from https://github.com/aymericdamien/TensorFlow-Examples/blob/master/examples/2_BasicModels/logistic_regression.py
 
 learning_rate = 0.001
 training_epochs = 25
-batch_size = 128
+batch_size = 1024
 display_step = 1
 threshold = 0.5
 
@@ -31,12 +30,12 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
 
     ## TODO we can play with what loss we use
     # Minimize error using cross entropy
-    cost = tf.reduce_mean(-(y*tf.log(pred + epsilon) + (1-y)*tf.log(1-pred - epsilon)))
+    cost = tf.reduce_sum(-(y*tf.log(pred + epsilon) + (1-y)*tf.log(1-pred - epsilon)))
     # Gradient Descent
     optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
 
     # Initialize the variables (i.e. assign their default value)
-    init = tf.global_variables_initializer()
+    init_g = tf.global_variables_initializer()
 
     # Add ops to save and restore all the variables.
     saver = tf.train.Saver()
@@ -45,7 +44,7 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
     with tf.Session() as sess:
 
         # Run the initializer
-        sess.run(init)
+        sess.run(init_g)
 
         # Training cycle
         for epoch in range(training_epochs):
@@ -71,10 +70,32 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
         print("Model saved in file: %s" % save_path)
 
         # Evaluate Model
-        print("test prediction: ", (sess.run(pred, feed_dict={x: test_x})))
+        # Variables for Evaluation
+        yhat = tf.cast(pred > threshold, tf.float32)
+        accuracy, acc_update = tf.metrics.accuracy(y, yhat)
+        false_pos, fp_update = tf.metrics.false_positives(y, yhat)
+        false_neg, fn_update = tf.metrics.false_negatives(y, yhat)
+        precision, prec_update = tf.metrics.precision(y, yhat)
+        recall, rec_update = tf.metrics.recall(y, yhat)
 
-        accuracy = tf.reduce_mean(tf.cast(tf.cast(pred > threshold, tf.float32) == y, tf.float32))
-        print("Accuracy: ", (sess.run(accuracy, feed_dict={x: test_x, y:test_y})))
+        sess.run(tf.local_variables_initializer())
+        metrics = [accuracy, acc_update,
+                   precision, prec_update,
+                   recall, rec_update,
+                   false_pos, fp_update,
+                   false_neg, fn_update]
+        sess.run(metrics, feed_dict={x: test_x, y: test_y})
+
+        false_neg_count = sess.run(false_neg)
+        specificity = (len(test_y) - false_neg_count)/(sum(label == 0 for label in test_y))
+
+        print("Accuracy: ", sess.run(accuracy))
+        print("Precision: ", sess.run(precision)) # True positive / (true positive + false positive)
+        print("Recall: ", sess.run(recall)) # True positive / Positive
+        print("Specificity: ", specificity) # True negative/ Negative
+        print("False Positive Count: ", sess.run(false_pos))
+        print("False Negative Count: ", false_neg_count)
+
 
     return save_path
 
@@ -82,8 +103,8 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
 
 def main():
     #load trainX, trainY
-    trainX, trainY, testX, testY = retreiveData("10user10exp")
-    train_and_eval(trainX, trainY, testX, testY)
+    trainX, trainY, testX, testY = retreiveData("full_RUS_undersample")
+    train_and_eval(trainX, trainY, testX, testY, "full_RUS")
 
 if __name__ == '__main__':
     main()

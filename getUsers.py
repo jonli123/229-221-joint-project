@@ -4,8 +4,15 @@ import random
 from imblearn.over_sampling import SMOTE, ADASYN
 from imblearn.under_sampling import RandomUnderSampler
 
+# oversample method choice
+SMOTE_CONSTANT = 1
+ADASYN_CONSTANT = 2
+
+# undersample method choice
+RUS_CONSTANT = 3
+
 #loads data in user by user, returns matrix of user data 56x51x71
-def loadData(filename, suffix, user_cutoff = 5, example_cutoff = 5):
+def loadData(filename, user_cutoff=5, example_cutoff=5, sample_choice = RUS_CONSTANT):
     data = np.loadtxt(open(filename,'rb'),delimiter=',', skiprows=1)
     m,n = data.shape
     #print (m,n)
@@ -30,54 +37,33 @@ def loadData(filename, suffix, user_cutoff = 5, example_cutoff = 5):
                         else:
                             labels.append(0)
 
-    labeledData = list(zip(pairData, labels))
+    x_resampled, y_resampled = np.asarray(pairData), np.asarray(labels)
+
+    # oversampling methods, minority class
+    if sample_choice == SMOTE_CONSTANT:
+        sm = SMOTE(random_state=42)
+        x_resampled, y_resampled = sm.fit_sample(pairData, labels)
+    elif sample_choice == ADASYN_CONSTANT:
+        ada = ADASYN(random_state=42)
+        x_resampled, y_resampled = ada.fit_sample(pairData, labels)
+    elif sample_choice == RUS_CONSTANT:
+        rus = RandomUnderSampler(random_state=42)
+        x_resampled, y_resampled = rus.fit_sample(pairData, labels)
+
+    labeledData = list(zip(x_resampled, y_resampled))
     random.shuffle(labeledData)
     cutoff = int(len(labeledData)*0.7)
-
-    #print cutoff
-    # print labeledData[0]
 
     trainX, trainY = zip(*labeledData[:cutoff])
     trainX = np.asarray(trainX)
     trainY = np.asarray(trainY)
+
     testX, testY= zip(*labeledData[cutoff:])
-
-
-testX = np.asarray(testX)
+    testX = np.asarray(testX)
     testY = np.asarray(testY)
-    np.savetxt('data/trainX'+suffix+'.csv',trainX,delimiter = ',')
-    np.savetxt('data/trainY'+suffix+'.csv',trainY,delimiter = ',')
-    np.savetxt('data/testX'+suffix+'.csv',testX,delimiter = ',')
-    np.savetxt('data/testY'+suffix+'.csv',testY,delimiter = ',')
 
-    # oversample method choice
-    SMOTE_CONSTANT = 1
-    ADASYN_CONSTANT = 2
+    return trainX, trainY, testX, testY
 
-    # undersample method choice
-    RUS_CONSTANT = 1
-
-
-    oversample_choice = SMOTE_CONSTANT
-    undersample_choice = RUS_CONSTANT
-
-    # oversampling methods, minority class
-    if oversample_choice == SMOTE_CONSTANT:
-        sm = SMOTE(random_state=42)
-        trainX_resampled, trainY_resampled = sm.fit_sample(trainX, trainY)return np.array(trainX_resampled), np.array(trainY_resampled), np.array(testX), np.array(testY)
-
-    if oversample_choice == ADASYN_CONSTANT:
-        ada = ADASYN(random_state=42)
-        trainX_resampled, trainY_resampled = ada.fit_sample(trainX, trainY)
-        returnnp.array(trainX_resampled), np.array(trainY_resampled), np.array(testX), np.array(testY)
-
-    # undersampling methods, majority class
-    if undersample_choice == RUS_CONSTANT:
-        rus = RandomUnderSampler(random_state=42)
-        trainX_resampled, trainY_resampled = rus.fit_sample(trainX,trainY)return np.array(trainX_resampled), np.array(trainY_resampled), np.array(testX), np.array(testY)
-
-    #return np.array(trainX), np.array(trainY), np.array(testX), np.array(testY)
-    # return np.array(trainX_resampled), np.array(trainY_resampled), np.array(testX), np.array(testY)
 
 def retreiveData(suffix):
     trainX = np.genfromtxt('data/trainX'+suffix+'.csv',delimiter=",",skip_header=False)
@@ -93,7 +79,12 @@ def main():
     start = time.time()
 
     filename = 'keystroke.csv'
-    trainX, trainY, testX, testY = loadData(filename, "10user10exp", 10, 10)
+    trainX, trainY, testX, testY = loadData(filename, 100, 100, sample_choice=RUS_CONSTANT)
+    suffix = "full_RUS_undersample"
+    np.savetxt('data/trainX' + suffix + '.csv', trainX, delimiter=',')
+    np.savetxt('data/trainY' + suffix + '.csv', trainY, delimiter=',')
+    np.savetxt('data/testX' + suffix + '.csv', testX, delimiter=',')
+    np.savetxt('data/testY' + suffix + '.csv', testY, delimiter=',')
     #print len(trainData)
     #print len(testData)
     end = time.time()
