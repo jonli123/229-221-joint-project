@@ -11,16 +11,17 @@ ADASYN_CONSTANT = 2
 # undersample method choice
 RUS_CONSTANT = 3
 
-#loads data in user by user, returns matrix of user data 56x51x71
+#loads data with oversampling
 def loadData(filename, user_cutoff=5, example_cutoff=5, sample_choice = RUS_CONSTANT):
     data = np.loadtxt(open(filename,'rb'),delimiter=',', skiprows=1)
     m,n = data.shape
+    '''
     #print (m,n)
     users = [[] for y in range(56)]
     for i in range(m):
         userNum = int(data[i][0])-1
         users[userNum].append(data[i][1:n])
-
+    '''
     pairData = []
     labels = []
 
