@@ -13,10 +13,8 @@ threshold = 0.5
 # an epsilon to prevent nan loss
 epsilon = float_info.epsilon
 
-def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"):
 
-    m, n = train_x.shape
-
+def get_model(n):
     # tf Graph Input
     x = tf.placeholder(tf.float32, [None, n])  # Sequence1 concat Sequence2
     y = tf.placeholder(tf.float32, [None, 1])  # 0 or 1 label
@@ -26,13 +24,37 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
     b = tf.Variable(tf.zeros(1))
 
     # Construct model
-    pred = tf.nn.sigmoid(tf.matmul(x, W) + b) # Logistic Regression
+    pred = tf.nn.sigmoid(tf.matmul(x, W) + b)  # Logistic Regression
+    yhat = tf.cast(pred > threshold, tf.float32)
 
     ## TODO we can play with what loss we use
     # Minimize error using cross entropy
-    cost = tf.reduce_sum(-(y*tf.log(pred + epsilon) + (1-y)*tf.log(1  - pred + epsilon)))
+    cost = tf.reduce_sum(-(y * tf.log(pred + epsilon) + (1 - y) * tf.log(1 - pred + epsilon)))
     # Gradient Descent
     optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
+
+    params = {}
+    params["x"] = x
+    params["y"] = y
+    params["W"] = W
+    params["b"] = b
+    params["pred"] = pred
+    params["yhat"] = yhat
+    params["cost"] = cost
+    params["optimizer"] = optimizer
+    return params
+
+def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"):
+
+    m, n = train_x.shape
+
+    params = get_model(n)
+    x = params["x"]
+    y = params["y"]
+    pred = params["pred"]
+    yhat = params["yhat"]
+    cost = params["cost"]
+    optimizer = params["optimizer"]
 
     # Initialize the variables (i.e. assign their default value)
     init_g = tf.global_variables_initializer()
@@ -71,7 +93,6 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
 
         # Evaluate Model
         # Variables for Evaluation
-        yhat = tf.cast(pred > threshold, tf.float32)
         accuracy, acc_update = tf.metrics.accuracy(y, yhat)
         false_pos, fp_update = tf.metrics.false_positives(y, yhat)
         false_neg, fn_update = tf.metrics.false_negatives(y, yhat)
@@ -101,11 +122,33 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
     return save_path
 
 
+def test_attack(attack_data, model_name="logistic.ckpt"):
+    m, n = attack_data.shape
+
+    params = get_model(n)
+    x = params["x"]
+    pred = params["pred"]
+    yhat = params["yhat"]
+
+    # Add ops to save and restore all the variables.
+    saver = tf.train.Saver()
+
+    # Start training
+    with tf.Session() as sess:
+        saver.restore(sess, "./tmp/" + model_name)
+
+        predictions = sess.run(pred, feed_dict={x: attack_data})
+        successful_attacks = sum(label == 1 for label in predictions)
+        print("Number of Successful Attacks: ", successful_attacks)
+        print("Number of Validation Examples: ", len(attack_data))
+        print("Attack Success Rate: ", successful_attacks/len(attack_data))
+
 
 def main():
     #load trainX, trainY
     trainX, trainY, testX, testY = retreiveData("full_RUS_undersample")
     train_and_eval(trainX, trainY, testX, testY)
+    # test_attack(testX)
 
 if __name__ == '__main__':
     main()

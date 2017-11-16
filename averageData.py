@@ -1,3 +1,4 @@
+from __future__ import print_function
 import csv
 import numpy as np
 import time
@@ -23,10 +24,10 @@ def calculateAverages(data):
 		concat = np.concatenate((row[1:], out))
 		pairData.append(concat)
 
-	print out
-	print len(out) #71
-	print len(pairData)#5712
-	print len(pairData[0]) #142
+	print(out)
+	print(len(out)) #71
+	print(len(pairData))#5712
+	print(len(pairData[0])) #142
 	return np.array(pairData)
 
 def main():
