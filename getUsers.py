@@ -80,8 +80,8 @@ def main():
     start = time.time()
 
     filename = 'keystroke.csv'
-    trainX, trainY, testX, testY = loadData(filename, 100, 100, sample_choice=RUS_CONSTANT)
-    suffix = "full_RUS_undersample"
+    trainX, trainY, testX, testY = loadData(filename, user_cutoff=100, example_cutoff=30, sample_choice=ADASYN_CONSTANT)
+    suffix = "30_ADASYN_oversample"
     np.savetxt('data/trainX' + suffix + '.csv', trainX, delimiter=',')
     np.savetxt('data/trainY' + suffix + '.csv', trainY, delimiter=',')
     np.savetxt('data/testX' + suffix + '.csv', testX, delimiter=',')

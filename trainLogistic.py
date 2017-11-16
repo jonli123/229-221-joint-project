@@ -145,10 +145,13 @@ def test_attack(attack_data, model_name="logistic.ckpt"):
 
 
 def main():
-    #load trainX, trainY
-    trainX, trainY, testX, testY = retreiveData("full_RUS_undersample")
-    train_and_eval(trainX, trainY, testX, testY)
-    # test_attack(testX)
+    # #load trainX, trainY
+    # trainX, trainY, testX, testY = retreiveData("full_RUS_undersample")
+    # train_and_eval(trainX, trainY, testX, testY)
+    #
+    # Attack model
+    attacks = np.genfromtxt('data/attack_1mean_all.csv', delimiter=",", skip_header=False)
+    test_attack(attacks)
 
 if __name__ == '__main__':
     main()

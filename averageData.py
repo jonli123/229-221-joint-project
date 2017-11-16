@@ -35,6 +35,7 @@ def main():
 	filename = 'keystroke.csv'
 	data = loadData(filename)
 	attacks = calculateAverages(data)
+	np.savetxt('data/attack_1mean_all.csv', attacks, delimiter=',')
 	end = time.time()
 	print("Time to run:" + str(end-start))
 
