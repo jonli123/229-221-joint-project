@@ -11,17 +11,24 @@ ADASYN_CONSTANT = 2
 # undersample method choice
 RUS_CONSTANT = 3
 
-#loads data with oversampling
-def loadData(filename, user_cutoff=5, example_cutoff=5, sample_choice = RUS_CONSTANT):
+def loadSingleData(filename):
     data = np.loadtxt(open(filename,'rb'),delimiter=',', skiprows=1)
     m,n = data.shape
-    '''
-    #print (m,n)
+
     users = [[] for y in range(56)]
     for i in range(m):
         userNum = int(data[i][0])-1
         users[userNum].append(data[i][1:n])
-    '''
+
+    return users
+
+
+
+#loads data with oversampling
+def loadPairData(filename, user_cutoff=5, example_cutoff=5, sample_choice = RUS_CONSTANT):
+    data = np.loadtxt(open(filename,'rb'),delimiter=',', skiprows=1)
+    m,n = data.shape
+    
     pairData = []
     labels = []
 
@@ -78,16 +85,19 @@ def retreiveData(suffix):
 
 def main():
     start = time.time()
-
     filename = 'keystroke.csv'
-    trainX, trainY, testX, testY = loadData(filename, user_cutoff=100, example_cutoff=30, sample_choice=ADASYN_CONSTANT)
+
+    '''
+    trainX, trainY, testX, testY = loadPairData(filename, user_cutoff=100, example_cutoff=30, sample_choice=ADASYN_CONSTANT)
     suffix = "30_ADASYN_oversample"
     np.savetxt('data/trainX' + suffix + '.csv', trainX, delimiter=',')
     np.savetxt('data/trainY' + suffix + '.csv', trainY, delimiter=',')
     np.savetxt('data/testX' + suffix + '.csv', testX, delimiter=',')
     np.savetxt('data/testY' + suffix + '.csv', testY, delimiter=',')
-    #print len(trainData)
-    #print len(testData)
+    '''
+
+    userMatrix = loadSingleData(filename)
+
     end = time.time()
     print("Time to run:" + str(end-start))
 
