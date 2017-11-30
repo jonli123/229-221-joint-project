@@ -12,7 +12,7 @@ ADASYN_CONSTANT = 2
 RUS_CONSTANT = 3
 
 def loadSingleData(filename):
-    data = np.loadtxt(open(filename,'rb'),delimiter=',', skiprows=1)
+    data = np.loadtxt(open(filename,'rb'), delimiter=',', skiprows=1)
     m,n = data.shape
 
     users = [[] for y in range(56)]
@@ -28,7 +28,7 @@ def loadSingleData(filename):
 def loadPairData(filename, user_cutoff=5, example_cutoff=5, sample_choice = RUS_CONSTANT):
     data = np.loadtxt(open(filename,'rb'),delimiter=',', skiprows=1)
     m,n = data.shape
-    
+
     pairData = []
     labels = []
 

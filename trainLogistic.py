@@ -107,7 +107,7 @@ def train_and_eval(train_x, train_y, test_x, test_y, model_name ="logistic.ckpt"
                    false_neg, fn_update]
         sess.run(metrics, feed_dict={x: test_x, y: test_y})
 
-        predictions = sess.run(pred, feed_dict={x: test_x})
+        predictions = sess.run(yhat, feed_dict={x: test_x})
         false_neg_count = sess.run(false_neg)
         specificity = (sum(label == 0 for label in predictions) - false_neg_count)/sum(label == 0 for label in test_y)
 
@@ -146,12 +146,12 @@ def test_attack(attack_data, model_name="logistic.ckpt"):
 
 def main():
     # #load trainX, trainY
-    # trainX, trainY, testX, testY = retreiveData("full_RUS_undersample")
-    # train_and_eval(trainX, trainY, testX, testY)
-    #
-    # Attack model
-    attacks = np.genfromtxt('data/attack_1mean_all.csv', delimiter=",", skip_header=False)
-    test_attack(attacks)
+    trainX, trainY, testX, testY = retreiveData("full_RUS_undersample")
+    train_and_eval(trainX, trainY, testX, testY)
+
+    # # Attack model
+    # attacks = np.genfromtxt('data/attack_1mean_all.csv', delimiter=",", skip_header=False)
+    # test_attack(attacks)
 
 if __name__ == '__main__':
     main()

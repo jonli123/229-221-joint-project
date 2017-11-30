@@ -8,6 +8,38 @@ from keras.callbacks import LambdaCallback
 training_epochs = 100
 threshold = 0.5
 
+def clear_local_variables(epoch, logs=None):
+    K.get_session().run(tf.local_variables_initializer())
+    #print([(K.get_session().run(i), i.name) for i in tf.local_variables()])
+
+def recall(y_true, y_pred):
+    y_hat = tf.cast(y_pred > threshold, tf.float32)
+    score, update = tf.metrics.recall(y_true, y_hat)
+    K.get_session().run(tf.local_variables_initializer())
+    with tf.control_dependencies([update]):
+        score = tf.identity(score)
+    return score
+
+def precision(y_true, y_pred):
+    y_hat = tf.cast(y_pred > threshold, tf.float32)
+    score, update = tf.metrics.precision(y_true, y_hat)
+    K.get_session().run(tf.local_variables_initializer())
+    with tf.control_dependencies([update]):
+        score = tf.identity(score)
+    return score
+
+def false_negatives(y_true, y_pred):
+    y_hat = tf.cast(y_pred > threshold, tf.float32)
+    score, update = tf.metrics.false_negatives(y_true, y_hat)
+    K.get_session().run(tf.local_variables_initializer())
+    with tf.control_dependencies([update]):
+        score = tf.identity(score)
+    return score
+
+
+def specificity(y_true, y_pred, false_negatives):
+    return (sum(label == 0 for label in y_pred)[0] - false_negatives) / sum(label == 0 for label in y_true)
+
 def logistic_model():
     print("building model")
     # This returns a tensor
@@ -60,38 +92,9 @@ def train_and_eval(trainX, trainY, testX, testY, model, model_name="keras_DNN"):
     print("Specificity is ", specificity(testY, predicted > threshold, metric_vals[-1]))
     return metric_vals[1]
 
+def evalAttack():
+    #TODO
 
-def clear_local_variables(epoch, logs=None):
-    K.get_session().run(tf.local_variables_initializer())
-    #print([(K.get_session().run(i), i.name) for i in tf.local_variables()])
-
-def recall(y_true, y_pred):
-    y_hat = tf.cast(y_pred > threshold, tf.float32)
-    score, update = tf.metrics.recall(y_true, y_hat)
-    K.get_session().run(tf.local_variables_initializer())
-    with tf.control_dependencies([update]):
-        score = tf.identity(score)
-    return score
-
-def precision(y_true, y_pred):
-    y_hat = tf.cast(y_pred > threshold, tf.float32)
-    score, update = tf.metrics.precision(y_true, y_hat)
-    K.get_session().run(tf.local_variables_initializer())
-    with tf.control_dependencies([update]):
-        score = tf.identity(score)
-    return score
-
-def false_negatives(y_true, y_pred):
-    y_hat = tf.cast(y_pred > threshold, tf.float32)
-    score, update = tf.metrics.false_negatives(y_true, y_hat)
-    K.get_session().run(tf.local_variables_initializer())
-    with tf.control_dependencies([update]):
-        score = tf.identity(score)
-    return score
-
-
-def specificity(y_true, y_pred, false_negatives):
-    return (sum(label == 0 for label in y_pred)[0] - false_negatives) / sum(label == 0 for label in y_true)
 
 
 def main():
