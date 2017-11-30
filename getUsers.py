@@ -13,14 +13,10 @@ RUS_CONSTANT = 3
 
 def loadSingleData(filename):
     data = np.loadtxt(open(filename,'rb'), delimiter=',', skiprows=1)
-    m,n = data.shape
-
-    users = [[] for y in range(56)]
-    for i in range(m):
-        userNum = int(data[i][0])-1
-        users[userNum].append(data[i][1:n])
-
-    return users
+    m, n = data.shape
+    labels = data[:, 0]
+    data_points = data[:, 1:]
+    return labels, data_points
 
 
 
@@ -96,7 +92,7 @@ def main():
     np.savetxt('data/testY' + suffix + '.csv', testY, delimiter=',')
     '''
 
-    userMatrix = loadSingleData(filename)
+    labels, data_points = loadSingleData(filename)
 
     end = time.time()
     print("Time to run:" + str(end-start))
