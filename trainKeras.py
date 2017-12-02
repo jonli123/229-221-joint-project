@@ -1,81 +1,14 @@
 from getUsers import retreiveData
-from keras.layers import Input, Dense
-from keras.models import Model
-import tensorflow as tf
-import keras.backend as K
 from keras.callbacks import LambdaCallback
 import matplotlib.pyplot as plt
 import numpy as np
 from KmeansAttach import generate_tiled_k_means_attack
+from KerasModels import *
 
 training_epochs = 20
 threshold = 0.5
+input_n = 142
 
-def clear_local_variables(epoch, logs=None):
-    K.get_session().run(tf.local_variables_initializer())
-
-def recall(y_true, y_pred):
-    y_hat = tf.cast(y_pred > threshold, tf.float32)
-    score, update = tf.metrics.recall(y_true, y_hat)
-    K.get_session().run(tf.local_variables_initializer())
-    with tf.control_dependencies([update]):
-        score = tf.identity(score)
-    return score
-
-def precision(y_true, y_pred):
-    y_hat = tf.cast(y_pred > threshold, tf.float32)
-    score, update = tf.metrics.precision(y_true, y_hat)
-    K.get_session().run(tf.local_variables_initializer())
-    with tf.control_dependencies([update]):
-        score = tf.identity(score)
-    return score
-
-def false_negatives(y_true, y_pred):
-    y_hat = tf.cast(y_pred > threshold, tf.float32)
-    score, update = tf.metrics.false_negatives(y_true, y_hat)
-    K.get_session().run(tf.local_variables_initializer())
-    with tf.control_dependencies([update]):
-        score = tf.identity(score)
-    return score
-
-
-def specificity(y_true, y_pred, false_negatives):
-    return (sum(label == 0 for label in y_pred)[0] - false_negatives) / sum(label == 0 for label in y_true)
-
-def logistic_model():
-    print("building model")
-    # This returns a tensor
-    inputs = Input(shape=(142,))
-
-    # a layer instance is callable on a tensor, and returns a tensor
-    predictions = Dense(1, activation='sigmoid')(inputs)
-
-    # This creates a model that includes
-    # the Input layer and three Dense layers
-    model = Model(inputs=inputs, outputs=predictions)
-    model.compile(optimizer='rmsprop',
-                  loss='binary_crossentropy',
-                  metrics=['accuracy', recall, precision, false_negatives])
-    return model
-
-def DeepNN(hidden_layers, units_per_layer=10):
-    print("building model")
-    # This returns a tensor
-    inputs = Input(shape=(142,))
-
-    # a layer instance is callable on a tensor, and returns a tensor
-    x = Dense(units_per_layer, activation='relu')(inputs)
-    for _ in range(1, hidden_layers):
-        x = Dense(units_per_layer, activation='relu')(x)
-    predictions = Dense(1, activation='sigmoid')(x)
-
-    # This creates a model that includes
-    # the Input layer and three Dense layers
-    model = Model(inputs=inputs, outputs=predictions)
-    model.compile(optimizer='rmsprop',
-                  loss='binary_crossentropy',
-                  metrics=['accuracy', recall, precision, false_negatives])
-    return model
 
 def train_and_eval(trainX, trainY, valX, valY, model, model_name="keras_DNN"):
     print("Training model")
@@ -113,9 +46,7 @@ def eval_attack(model, attacks):
 
 def plot_attacks(attack_results, ylabel, ks, model_names, attack_name):
     plt.xscale('log', basex=2)
-    # for index, results in enumerate(attack_results):
-    #     plt.plot(ks, results, marker='o', linestyle='--')
-    lines = [plt.plot(ks, results, marker='o', linestyle='--', label=name) for results, name in zip(attack_results, model_names)]
+    [plt.plot(ks, results, marker='o', linestyle='--', label=name) for results, name in zip(attack_results, model_names)]
     plt.legend(loc=2, borderaxespad=0.)
     plt.title(attack_name)
     plt.ylabel(ylabel)
@@ -123,14 +54,6 @@ def plot_attacks(attack_results, ylabel, ks, model_names, attack_name):
     plt.savefig(str(attack_name)+".png")
     plt.close()
 
-
-
-def main():
-    # #load trainX, trainY
-    # trainX, trainY, valX, valY, testX, testY = retreiveData("RUS_90_5_5")
-    # train_and_eval(trainX, trainY, valX, valY, logistic_model(), model_name="Logistic")
-    # histories = [train_and_eval(trainX, trainY, valX, valY, Models(i), model_name="DNN_"+str(i))[1] for i in range(1, 11)]
-    attack()
 
 def attack():
     ks = [1, 2, 4, 8, 16, 32, 64]
@@ -145,11 +68,11 @@ def attack():
         gaussian_attack = generate_tiled_k_means_attack(k, sample_guassian=True, sample_num=5)
 
         for model_index, model_num in enumerate(models):
-            model = DeepNN(model_num)
+            model = DeepNN(input_n, model_num)
             model_name = "DNN_" + str(model_num)
 
             if model_num == 0:
-                model = logistic_model()
+                model = logistic_model(input_n)
                 model_name = "Logistic"
 
             model.load_weights("Models/"+model_name)
@@ -176,6 +99,15 @@ def attack():
     plot_attacks(gaussian_success_rate, "attack success rate", ks, model_names, "K cluster Gaussian attack success rate - 5 sample per cluster")
     plot_attacks(k_mean_success_count, "attack success count", ks, model_names, "K-mean center attack success count")
     plot_attacks(gaussian_success_count, "attack success count", ks, model_names, "K cluster Gaussian attack success count - 5 sample per cluster")
+
+
+
+def main():
+    # #load trainX, trainY
+    # trainX, trainY, valX, valY, testX, testY = retreiveData("RUS_90_5_5")
+    # train_and_eval(trainX, trainY, valX, valY, logistic_model(input_n), model_name="Logistic")
+    # histories = [train_and_eval(trainX, trainY, valX, valY, DeepNN(input_n, i), model_name="DNN_"+str(i))[1] for i in range(1, 11)]
+    attack()
 
 if __name__ == '__main__':
     main()
