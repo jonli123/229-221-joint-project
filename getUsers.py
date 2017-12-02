@@ -18,8 +18,6 @@ def loadSingleData(filename):
     data_points = data[:, 1:]
     return labels, data_points
 
-
-
 #loads data with oversampling
 def loadPairData(filename, user_cutoff=5, example_cutoff=5, sample_choice = RUS_CONSTANT):
     data = np.loadtxt(open(filename,'rb'),delimiter=',', skiprows=1)
@@ -56,43 +54,51 @@ def loadPairData(filename, user_cutoff=5, example_cutoff=5, sample_choice = RUS_
 
     labeledData = list(zip(x_resampled, y_resampled))
     random.shuffle(labeledData)
-    cutoff = int(len(labeledData)*0.7)
+    train_cutoff = int(len(labeledData)*0.90)
+    val_cutoff = int(len(labeledData)*0.95)
 
-    trainX, trainY = zip(*labeledData[:cutoff])
+    trainX, trainY = zip(*labeledData[:train_cutoff])
     trainX = np.asarray(trainX)
     trainY = np.asarray(trainY)
 
-    testX, testY= zip(*labeledData[cutoff:])
+    valX, valY = zip(*labeledData[train_cutoff:val_cutoff])
+    valX = np.asarray(valX)
+    valY = np.asarray(valY)
+
+    testX, testY= zip(*labeledData[val_cutoff:])
     testX = np.asarray(testX)
     testY = np.asarray(testY)
 
-    return trainX, trainY, testX, testY
+    return trainX, trainY, valX, valY, testX, testY
 
 
 def retreiveData(suffix):
     trainX = np.genfromtxt('data/trainX'+suffix+'.csv',delimiter=",",skip_header=False)
     trainY = np.genfromtxt('data/trainY'+suffix+'.csv',delimiter=",",skip_header=False)
+    valX = np.genfromtxt('data/valX'+suffix+'.csv',delimiter=",",skip_header=False)
+    valY = np.genfromtxt('data/valY'+suffix+'.csv',delimiter=",",skip_header=False)
     testX = np.genfromtxt('data/testX'+suffix+'.csv',delimiter=",",skip_header=False)
     testY = np.genfromtxt('data/testY'+suffix+'.csv',delimiter=",",skip_header=False)
     len_train = trainX.shape[0]
+    len_val = valX.shape[0]
     len_test = testX.shape[0]
 
-    return trainX, trainY.reshape((len_train, 1)), testX, testY.reshape((len_test, 1))
+    return trainX, trainY.reshape((len_train, 1)), valX, valY.reshape((len_val, 1)), testX, testY.reshape((len_test, 1))
 
 def main():
     start = time.time()
     filename = 'keystroke.csv'
 
-    '''
-    trainX, trainY, testX, testY = loadPairData(filename, user_cutoff=100, example_cutoff=30, sample_choice=ADASYN_CONSTANT)
-    suffix = "30_ADASYN_oversample"
+    trainX, trainY, valX, valY, testX, testY = loadPairData(filename, user_cutoff=100, example_cutoff=100, sample_choice=RUS_CONSTANT)
+    suffix = "RUS_90_5_5"
     np.savetxt('data/trainX' + suffix + '.csv', trainX, delimiter=',')
     np.savetxt('data/trainY' + suffix + '.csv', trainY, delimiter=',')
+    np.savetxt('data/valX' + suffix + '.csv', valX, delimiter=',')
+    np.savetxt('data/valY' + suffix + '.csv', valY, delimiter=',')
     np.savetxt('data/testX' + suffix + '.csv', testX, delimiter=',')
     np.savetxt('data/testY' + suffix + '.csv', testY, delimiter=',')
-    '''
 
-    labels, data_points = loadSingleData(filename)
+    # labels, data_points = loadSingleData(filename)
 
     end = time.time()
     print("Time to run:" + str(end-start))

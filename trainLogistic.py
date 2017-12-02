@@ -146,8 +146,8 @@ def test_attack(attack_data, model_name="logistic.ckpt"):
 
 def main():
     # #load trainX, trainY
-    trainX, trainY, testX, testY = retreiveData("full_RUS_undersample")
-    train_and_eval(trainX, trainY, testX, testY)
+    trainX, trainY, valX, valY, testX, testY = retreiveData("RUS95:5")
+    train_and_eval(trainX, trainY, valX, valY)
 
     # # Attack model
     # attacks = np.genfromtxt('data/attack_1mean_all.csv', delimiter=",", skip_header=False)
