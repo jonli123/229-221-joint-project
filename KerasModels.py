@@ -3,6 +3,8 @@ from keras.models import Model
 import tensorflow as tf
 import keras.backend as K
 
+threshold = 0.5
+
 def clear_local_variables(epoch, logs=None):
     K.get_session().run(tf.local_variables_initializer())
 

@@ -1,4 +1,4 @@
-from getUsers import retreiveData
+from getUsers import retreivePairData
 from keras.callbacks import LambdaCallback
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,7 +24,6 @@ def train_and_eval(trainX, trainY, valX, valY, model, model_name="keras_DNN"):
 
 
 def plot_training_history(history, save_filename="model"):
-
     for metric in ['acc', 'loss', 'recall', 'precision', 'false_negatives']:
         plt.plot(history.history[metric], marker='o', linestyle='--')
         plt.plot(history.history['val_' + metric], marker='o', linestyle='--')
@@ -38,7 +37,7 @@ def plot_training_history(history, save_filename="model"):
 
 def eval_attack(model, attacks):
     predictions = model.predict(attacks)
-    successful_attacks = sum(label > 0.5 for label in predictions)
+    successful_attacks = sum(label > threshold for label in predictions)
     print("Number of Successful Attacks: ", successful_attacks)
     print("Number of Attacks: ", len(attacks))
     print("Attack Success Rate: ", successful_attacks / len(attacks))

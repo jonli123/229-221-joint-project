@@ -18,6 +18,18 @@ def loadSingleData(filename):
     data_points = data[:, 1:]
     return labels, data_points
 
+def resample_data(x, y, sample_choice = RUS_CONSTANT):
+    if sample_choice == SMOTE_CONSTANT:
+        sm = SMOTE(random_state=42)
+        x, y = sm.fit_sample(x, y)
+    elif sample_choice == ADASYN_CONSTANT:
+        ada = ADASYN(random_state=42)
+        x, y = ada.fit_sample(x, y)
+    elif sample_choice == RUS_CONSTANT:
+        rus = RandomUnderSampler(random_state=42)
+        x, y = rus.fit_sample(x, y)
+    return x, y
+
 #loads data with oversampling
 def loadPairData(filename, user_cutoff=5, example_cutoff=5, sample_choice = RUS_CONSTANT):
     data = np.loadtxt(open(filename,'rb'),delimiter=',', skiprows=1)
@@ -39,18 +51,8 @@ def loadPairData(filename, user_cutoff=5, example_cutoff=5, sample_choice = RUS_
                         else:
                             labels.append(0)
 
-    x_resampled, y_resampled = np.asarray(pairData), np.asarray(labels)
-
-    # oversampling methods, minority class
-    if sample_choice == SMOTE_CONSTANT:
-        sm = SMOTE(random_state=42)
-        x_resampled, y_resampled = sm.fit_sample(pairData, labels)
-    elif sample_choice == ADASYN_CONSTANT:
-        ada = ADASYN(random_state=42)
-        x_resampled, y_resampled = ada.fit_sample(pairData, labels)
-    elif sample_choice == RUS_CONSTANT:
-        rus = RandomUnderSampler(random_state=42)
-        x_resampled, y_resampled = rus.fit_sample(pairData, labels)
+    # resample data
+    x_resampled, y_resampled = resample_data(pairData, labels, sample_choice=sample_choice)
 
     labeledData = list(zip(x_resampled, y_resampled))
     random.shuffle(labeledData)
@@ -71,8 +73,7 @@ def loadPairData(filename, user_cutoff=5, example_cutoff=5, sample_choice = RUS_
 
     return trainX, trainY, valX, valY, testX, testY
 
-
-def retreiveData(suffix):
+def retreivePairData(suffix):
     trainX = np.genfromtxt('data/trainX'+suffix+'.csv',delimiter=",",skip_header=False)
     trainY = np.genfromtxt('data/trainY'+suffix+'.csv',delimiter=",",skip_header=False)
     valX = np.genfromtxt('data/valX'+suffix+'.csv',delimiter=",",skip_header=False)
@@ -84,6 +85,25 @@ def retreiveData(suffix):
     len_test = testX.shape[0]
 
     return trainX, trainY.reshape((len_train, 1)), valX, valY.reshape((len_val, 1)), testX, testY.reshape((len_test, 1))
+
+
+def singleUserData(userID=1):
+    filename = 'keystroke.csv'
+    labels, data_points = loadSingleData(filename=filename)
+    single_user_label = labels == userID
+    x, y = resample_data(data_points, single_user_label)
+    labeledData = list(zip(x, y))
+    random.shuffle(labeledData)
+    x, y = zip(*labeledData)
+    np.savetxt('data/singleUserX' + str(userID) + '.csv', x, delimiter=',')
+    np.savetxt('data/singleUserY' + str(userID) + '.csv', y, delimiter=',')
+
+def retreiveSingleUserData(userID=1):
+    x = np.genfromtxt('data/singleUserX' + str(userID) + '.csv', delimiter=",", skip_header=False)
+    y = np.genfromtxt('data/singleUserY' + str(userID) + '.csv', delimiter=",", skip_header=False)
+    m = x.shape[0]
+
+    return x, y.reshape((m, 1))
 
 def main():
     start = time.time()
@@ -105,4 +125,5 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
+    # singleUserData()
+

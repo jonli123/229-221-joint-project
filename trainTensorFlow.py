@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from sys import float_info
-from getUsers import retreiveData
+from getUsers import retreivePairData
 # Referenced from https://github.com/aymericdamien/TensorFlow-Examples/blob/master/examples/2_BasicModels/logistic_regression.py
 
 learning_rate = 0.001
@@ -146,7 +146,7 @@ def test_attack(attack_data, model_name="logistic.ckpt"):
 
 def main():
     # #load trainX, trainY
-    trainX, trainY, valX, valY, testX, testY = retreiveData("RUS95:5")
+    trainX, trainY, valX, valY, testX, testY = retreivePairData("RUS95:5")
     train_and_eval(trainX, trainY, valX, valY)
 
     # # Attack model
