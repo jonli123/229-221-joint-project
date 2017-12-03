@@ -1,0 +1,3 @@
+By 12/4:
+- False negative rates (fails to detect fraud) in addition to success rate plots
+- Correlation map of features for Bayesian network. See https://www.nature.com/articles/srep25156
