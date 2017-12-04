@@ -116,12 +116,12 @@ def eval_model():
 
         print("-------------------------\n")
         print("Evaluating Model", model_name)
-        metric = model.eval(x=valX, y=valY)
+        metric = model.evaluate(x=valX, y=valY)
         metrics.append(metric)
     print(models)
     print(logistic_model(input_n).metrics)
-    print(metrics)
-
+    for metric in metrics:
+        print(metric)
 
 def main():
     # #load trainX, trainY
