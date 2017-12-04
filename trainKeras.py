@@ -2,7 +2,7 @@ from getUsers import retreivePairData
 from keras.callbacks import LambdaCallback
 import matplotlib.pyplot as plt
 import numpy as np
-from KmeansAttach import generate_tiled_k_means_attack
+from KmeansAttack import generate_tiled_k_means_attack
 from KerasModels import *
 
 training_epochs = 20
@@ -99,14 +99,36 @@ def attack():
     plot_attacks(k_mean_success_count, "attack success count", ks, model_names, "K-mean center attack success count")
     plot_attacks(gaussian_success_count, "attack success count", ks, model_names, "K cluster Gaussian attack success count - 5 sample per cluster")
 
+def eval_model():
+    trainX, trainY, valX, valY, testX, testY = retreivePairData("RUS_90_5_5")
+
+    metrics = []
+    models = [0, 1, 3, 5, 10]
+    for model_index, model_num in enumerate(models):
+        model = DeepNN(input_n, model_num)
+        model_name = "DNN_" + str(model_num)
+
+        if model_num == 0:
+            model = logistic_model(input_n)
+            model_name = "Logistic"
+
+        model.load_weights("Models/"+model_name)
+
+        print("-------------------------\n")
+        print("Evaluating Model", model_name)
+        metric = model.eval(x=valX, y=valY)
+        metrics.append(metric)
+    print(models)
+    print(logistic_model(input_n).metrics)
+    print(metrics)
 
 
 def main():
     # #load trainX, trainY
-    # trainX, trainY, valX, valY, testX, testY = retreiveData("RUS_90_5_5")
+    # trainX, trainY, valX, valY, testX, testY = retreivePairData("RUS_90_5_5")
     # train_and_eval(trainX, trainY, valX, valY, logistic_model(input_n), model_name="Logistic")
     # histories = [train_and_eval(trainX, trainY, valX, valY, DeepNN(input_n, i), model_name="DNN_"+str(i))[1] for i in range(1, 11)]
-    attack()
+    eval_model()
 
 if __name__ == '__main__':
     main()

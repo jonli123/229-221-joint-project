@@ -64,6 +64,7 @@ def generate_tiled_k_means_attack(K, sample_guassian=False, sample_num=1, data_f
     attacks = generate_multivariate_gaussian_attack(cluster_assignments, cluster_centers, data, counts,
                                                     tile_fn=tile_attacks, sample_guassian=sample_guassian,
                                                     sample_num=sample_num)
+    print(counts)
     return attacks
 
 
