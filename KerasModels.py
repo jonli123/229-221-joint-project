@@ -2,6 +2,7 @@ from keras.layers import Input, Dense
 from keras.models import Model
 import tensorflow as tf
 import keras.backend as K
+import math
 
 threshold = 0.5
 
@@ -61,6 +62,27 @@ def DeepNN(input_n, hidden_layers, units_per_layer=10):
     x = Dense(units_per_layer, activation='relu')(inputs)
     for _ in range(1, hidden_layers):
         x = Dense(units_per_layer, activation='relu')(x)
+    predictions = Dense(1, activation='sigmoid')(x)
+
+    # This creates a model that includes
+    # the Input layer and three Dense layers
+    model = Model(inputs=inputs, outputs=predictions)
+    model.compile(optimizer='rmsprop',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy', recall, precision, false_negatives])
+    return model
+
+def TrigangleDNN(input_n, hidden_layers):
+    print("building model")
+    # This returns a tensor
+    inputs = Input(shape=(input_n,))
+
+    neurons = math.ceil(100/2)
+    # a layer instance is callable on a tensor, and returns a tensor
+    x = Dense(neurons, activation='relu')(inputs)
+    for _ in range(1, hidden_layers):
+        neurons = math.ceil(neurons/2)
+        x = Dense(neurons, activation='relu')(x)
     predictions = Dense(1, activation='sigmoid')(x)
 
     # This creates a model that includes
