@@ -1,6 +1,6 @@
 221-229-joint-project
 ========================
-#### **Valerie Ding**			dingv@cs.stanford.edu
+#### **Valerie Ding**			dingv@stanford.edu
 #### **Stephanie Dong**			sxdong11@stanford.edu
 #### **Jonathan** 				johnnyli@stanford.edu
 
